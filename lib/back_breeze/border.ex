@@ -9,10 +9,6 @@ defmodule BackBreeze.Border do
             top_right: nil,
             bottom_left: nil,
             bottom_right: nil,
-            top_color: nil,
-            bottom_color: nil,
-            left_color: nil,
-            right_color: nil,
             style: :none
 
   def none() do
@@ -84,5 +80,33 @@ defmodule BackBreeze.Border do
     |> Enum.map(&to_string/1)
     |> Enum.join("_")
     |> String.to_existing_atom()
+  end
+
+  # TODO: if any borders are set, replace the missing parts with a " " character
+
+  def render_top(border, width) do
+    if border.top do
+      (border.top_left || "") <>
+        String.duplicate(border.top, width) <> (border.top_right || "") <> "\n"
+    else
+      ""
+    end
+  end
+
+  def render_bottom(border, width) do
+    if border.bottom do
+      (border.bottom_left || "") <>
+        String.duplicate(border.bottom, width) <> (border.bottom_right || "")
+    else
+      ""
+    end
+  end
+
+  def render_left(border) do
+    border.left || ""
+  end
+
+  def render_right(border) do
+    border.right || ""
   end
 end

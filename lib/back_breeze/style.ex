@@ -75,29 +75,13 @@ defmodule BackBreeze.Style do
         _, t_style -> t_style
       end)
 
-    # TODO: if any borders are set, replace the missing parts with a " " character
-
-    top_border =
-      if border.top do
-        (border.top_left || "") <>
-          String.duplicate(border.top, width) <> (border.top_right || "") <> "\n"
-      else
-        ""
-      end
-
-    bottom_border =
-      if border.bottom do
-        (border.bottom_left || "") <>
-          String.duplicate(border.bottom, width) <> (border.bottom_right || "")
-      else
-        ""
-      end
-
     content =
-      (border.left || "") <>
+      BackBreeze.Border.render_left(border) <>
         Termite.Style.render_to_string(termite_style, str) <>
-        String.duplicate(" ", width - string_length) <> (border.right || "")
+        String.duplicate(" ", width - string_length) <>
+        BackBreeze.Border.render_right(border)
 
-    top_border <> content <> "\n" <> bottom_border
+    BackBreeze.Border.render_top(border, width) <>
+      content <> "\n" <> BackBreeze.Border.render_bottom(border, width)
   end
 end
