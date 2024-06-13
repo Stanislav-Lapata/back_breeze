@@ -25,5 +25,16 @@ defmodule BackBreeze.StyleTest do
       output = BackBreeze.Style.render(style, "Hello World")
       assert output == "┌───────────────┐\n│\e[1;38;5;3mHello World\e[0m    │\n└───────────────┘"
     end
+
+    test "renders empty lines when a height is specified" do
+      style =
+        BackBreeze.Style.height(3)
+        |> BackBreeze.Style.border()
+
+      output = BackBreeze.Style.render(style, "Hello World")
+
+      assert output ==
+               "┌───────────┐\n│\e[mHello World\e[0m│\n│           │\n│           │\n└───────────┘"
+    end
   end
 end

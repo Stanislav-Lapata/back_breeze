@@ -4,10 +4,10 @@ defmodule BackBreeze.Style do
   defstruct bold: false,
             italic: false,
             padding: 0,
-            invert: false,
+            reverse: false,
             border: BackBreeze.Border.none(),
             width: 0,
-            height: :auto,
+            height: 0,
             overflow: :auto,
             foreground_color: nil,
             background_color: nil
@@ -16,8 +16,16 @@ defmodule BackBreeze.Style do
     %{style | bold: true}
   end
 
+  def reverse(style \\ %Style{}) do
+    %{style | reverse: true}
+  end
+
   def width(style \\ %Style{}, width) do
     %{style | width: width}
+  end
+
+  def height(style \\ %Style{}, height) do
+    %{style | height: height}
   end
 
   def border(style \\ %Style{}) do
@@ -57,6 +65,7 @@ defmodule BackBreeze.Style do
     {border, style} = Map.pop(style, :border)
     {overflow, style} = Map.pop(style, :overflow)
     {width, style} = Map.pop(style, :width, string_length)
+    {height, style} = Map.pop(style, :height, 0)
 
     {width, str} =
       cond do
@@ -70,6 +79,7 @@ defmodule BackBreeze.Style do
         {_, nil}, t_style -> t_style
         {:bold, true}, t_style -> Termite.Style.bold(t_style)
         {:italic, true}, t_style -> Termite.Style.italic(t_style)
+        {:reverse, true}, t_style -> Termite.Style.reverse(t_style)
         {:foreground_color, col}, t_style -> Termite.Style.foreground(t_style, col)
         {:background_color, col}, t_style -> Termite.Style.background(t_style, col)
         _, t_style -> t_style
@@ -81,7 +91,21 @@ defmodule BackBreeze.Style do
         String.duplicate(" ", width - string_length) <>
         BackBreeze.Border.render_right(border)
 
+    padding =
+      if height > 0 do
+        Enum.reduce(1..(height - 1), "", fn _i, acc ->
+          acc <>
+            BackBreeze.Border.render_left(border) <>
+            String.duplicate(" ", width) <>
+            BackBreeze.Border.render_right(border) <> "\n"
+        end)
+      else
+        ""
+      end
+
     BackBreeze.Border.render_top(border, width) <>
-      content <> "\n" <> BackBreeze.Border.render_bottom(border, width)
+      content <>
+      if(border.bottom, do: "\n", else: "") <>
+      padding <> BackBreeze.Border.render_bottom(border, width)
   end
 end
