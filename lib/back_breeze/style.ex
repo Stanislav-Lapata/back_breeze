@@ -60,7 +60,7 @@ defmodule BackBreeze.Style do
   def render(style, str) do
     style = Map.from_struct(style)
 
-    string_length = String.length(str)
+    string_length = BackBreeze.Utils.string_length(str)
 
     {border, style} = Map.pop(style, :border)
     {overflow, style} = Map.pop(style, :overflow)

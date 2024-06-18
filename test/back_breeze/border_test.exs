@@ -29,6 +29,37 @@ defmodule BackBreeze.BorderTest do
     end
   end
 
+  describe "custom borders" do
+    test "created a custom border" do
+      custom = %{
+        top: "─",
+        bottom: " ",
+        left: "│",
+        right: "│",
+        top_left: "╭",
+        top_right: "╮",
+        bottom_left: "┘",
+        bottom_right: "└"
+      }
+
+      border = BackBreeze.Border.custom(custom)
+
+      assert border.style == :custom
+
+      for key <- Map.keys(custom) do
+        assert Map.fetch!(custom, key) == Map.fetch!(border, key)
+      end
+    end
+
+    test "individual borders not supported" do
+      border = BackBreeze.Border.custom(%{})
+
+      assert_raise(ArgumentError, fn ->
+        BackBreeze.Border.left(border)
+      end)
+    end
+  end
+
   describe "partial borders" do
     test "sets the default border style to line" do
       border =

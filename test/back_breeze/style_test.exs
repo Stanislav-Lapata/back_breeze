@@ -34,7 +34,7 @@ defmodule BackBreeze.StyleTest do
       output = BackBreeze.Style.render(style, "Hello World")
 
       assert output ==
-               "┌───────────┐\n│\e[mHello World\e[0m│\n│           │\n│           │\n└───────────┘"
+               "┌───────────┐\n│Hello World│\n│           │\n│           │\n└───────────┘"
     end
   end
 end

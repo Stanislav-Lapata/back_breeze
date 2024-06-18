@@ -15,6 +15,11 @@ defmodule BackBreeze.Border do
     %Border{}
   end
 
+  def custom(map) do
+    keys = [:top, :bottom, :left, :right, :top_left, :top_right, :bottom_left, :bottom_right]
+    Map.merge(%Border{style: :custom}, Map.take(map, keys))
+  end
+
   def line() do
     %Border{
       style: :line,
@@ -55,6 +60,11 @@ defmodule BackBreeze.Border do
 
     def unquote(dir)(border) do
       border = if border.style == :none, do: %{border | style: :line}, else: border
+
+      if border.style not in [:line, :invisible, :none] do
+        raise ArgumentError, "individual border not supported with custom borders"
+      end
+
       target_border = apply(__MODULE__, border.style, [])
       border = Map.put(border, unquote(dir), Map.fetch!(target_border, unquote(dir)))
 
