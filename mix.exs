@@ -4,6 +4,8 @@ defmodule BackBreeze.MixProject do
   def project do
     [
       app: :back_breeze,
+      description: "Styling helpers for terminal applications",
+      package: package(),
       version: "0.1.0",
       elixir: "~> 1.17-rc",
       start_permanent: Mix.env() == :prod,
@@ -18,10 +20,18 @@ defmodule BackBreeze.MixProject do
     ]
   end
 
+  defp package() do
+    [
+      files: ~w(lib .formatter.exs mix.exs README.md LICENCE.md),
+      licenses: ["MIT"],
+      links: %{}
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:termite, path: "../termite"}
+      {:termite, "~> 0.1.0"}
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
   end
