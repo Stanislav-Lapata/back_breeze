@@ -1,9 +1,25 @@
 defmodule BackBreeze.Box do
-  defstruct content: "", children: [], style: %BackBreeze.Style{}, width: nil, state: :ready
+  defstruct content: "",
+            children: [],
+            style: %BackBreeze.Style{},
+            width: nil,
+            state: :ready,
+            position: :relative,
+            left: nil,
+            top: nil,
+            layer: 0,
+            layer_map: %{}
 
   def new(opts) do
     map = Map.new(opts)
     style = Map.get(map, :style, %{})
+
+    style =
+      case Map.get(style, :border) do
+        :line -> %{style | border: BackBreeze.Border.line()}
+        _ -> style
+      end
+
     style = struct(BackBreeze.Style, style)
     struct(BackBreeze.Box, Map.put(map, :style, style))
   end
@@ -12,27 +28,177 @@ defmodule BackBreeze.Box do
     box
   end
 
-  def render(box) do
-    children = render_children(box)
-    content = BackBreeze.Style.render(box.style, children.content)
-    %{box | content: content, width: children.width, state: :rendered}
+  def render(%{children: []} = box) do
+    {content, width} = render_self(box)
+    %{box | content: content, width: width, state: :rendered, children: []}
   end
 
-  defp render_children(%{children: []} = box) do
-    box
+  def render(box) do
+    {child_layer_map, child_width, child_height} = render_children(box)
+
+    width =
+      if box.style.overflow == :hidden,
+        do: box.style.width,
+        else: max(box.style.width, child_width)
+
+    style = %{box.style | width: width}
+
+    {content, _width} =
+      render_self(%{box | content: box.content, width: width, style: style})
+
+    {layer_map, max_width, max_height} = generate_layer_map(content, %{}, 0, 0)
+
+    max_width = max(max_width, child_width)
+    max_height = max(max_height, child_height)
+
+    reset = Termite.Style.reset_code()
+
+    content =
+      Enum.map(0..max_height, fn y ->
+        {content, buffer, style, _} =
+          Enum.reduce(0..max_width, {"", "", "", false}, fn x, {acc, buffer, last_style, skip} ->
+            child_point = Map.get(child_layer_map, {y, x})
+
+            point =
+              if skip do
+                child_point
+              else
+                child_point || Map.get(layer_map, {y, x})
+              end
+
+            skip_next =
+              case child_point do
+                {char, _} -> Ucwidth.width(char) == 2
+                _ -> false
+              end
+
+            case {point, buffer, last_style} do
+              {nil, _, _} -> {acc, buffer, last_style, skip_next}
+              {{char, style}, _, style} -> {acc, buffer <> char, style, skip_next}
+              {{char, style}, _, ""} -> {acc <> buffer, char, style, skip_next}
+              {{char, style}, _, last} -> {acc <> last <> buffer <> reset, char, style, skip_next}
+            end
+          end)
+
+        case {buffer, style} do
+          {"", _} -> content
+          {_, nil} -> content <> buffer
+          {_, ""} -> content <> buffer
+          {_, style} -> content <> style <> buffer <> reset
+        end
+      end)
+
+    content = Enum.join(content, "\n") |> String.trim_trailing("\n")
+
+    %{box | content: content, width: max_width + 1, state: :rendered}
+  end
+
+  defp render_self(box) do
+    content = BackBreeze.Style.render(box.style, box.content)
+
+    items =
+      String.split(content, "\n")
+      |> Enum.map(&{BackBreeze.Utils.string_length(&1), &1})
+
+    {max_width, _} = Enum.max(items)
+    {content, max_width}
   end
 
   defp render_children(%{children: children} = box) when children != [] do
-    {content, width} =
+    children = set_layer(children, [], -1) |> Enum.map(&render/1)
+
+    relative =
       children
-      |> Enum.map(&render/1)
-      |> Enum.map(& &1.content)
+      |> Enum.filter(&(&1.position != :absolute))
+
+    {layer, style} =
+      case relative do
+        [x | _] -> {x.layer, x.style}
+        _ -> {0, %BackBreeze.Style{}}
+      end
+
+    {content, width} =
+      Enum.map(relative, & &1.content)
       |> join_horizontal()
 
-    %{box | content: content, children: [], width: width}
+    absolutes = Enum.filter(children, &(&1.position == :absolute))
+    relative = %{box | style: style, content: content, children: [], width: width, layer: layer}
+    rendered_boxes = [relative | absolutes] |> Enum.sort_by(& &1.layer)
+
+    border = box.style.border
+
+    Enum.reduce(rendered_boxes, {%{}, 0, 0}, fn box, {layer_map, max_width, max_height} ->
+      {start_x, y} =
+        case {box.position, border.left, border.top} do
+          {:absolute, _, _} -> {box.left, box.top}
+          {_, nil, nil} -> {0, 0}
+          {_, _, nil} -> {1, 0}
+          _ -> {1, 1}
+        end
+
+      {map, width, height} = generate_layer_map(box.content, layer_map, start_x, y)
+      {map, max(max_width, width), max(max_height, height)}
+    end)
   end
 
-  def join_horizontal(items, opts \\ []) do
+  defp generate_layer_map(content, layer_map, start_x, y) do
+    reset = Termite.Style.reset_code()
+
+    {_x, y, {acc, _, _}} =
+      content
+      |> String.graphemes()
+      |> Enum.reduce({start_x, y, {layer_map, false, ""}}, fn
+        "\n", {_x, y, acc} -> {start_x, y + 1, acc}
+        "\e", {x, y, {map, false, _}} -> {x, y, {map, true, "\e"}}
+        "m", {x, y, {map, true, seq}} -> {x, y, {map, false, seq <> "m"}}
+        c, {x, y, {map, true, seq}} -> {x, y, {map, true, seq <> c}}
+        c, {x, y, {map, _, ^reset}} -> add_layer_char(c, map, x, y, "", reset)
+        c, {x, y, {map, _, seq}} -> add_layer_char(c, map, x, y, seq, seq)
+      end)
+
+    {max_x, map} = Map.pop(acc, :max_x, 1)
+
+    {map, max_x - 1, y}
+  end
+
+  defp add_layer_char(c, map, x, y, current_seq, seq) do
+    width = Ucwidth.width(c)
+
+    map =
+      map
+      |> Map.update(:max_x, x + width, fn cur -> max(cur, x + width) end)
+      |> Map.put({y, x}, {c, current_seq})
+
+    {x + width, y, {map, false, seq}}
+  end
+
+  defp set_layer([], result, _layer) do
+    Enum.reverse(result)
+  end
+
+  defp set_layer([%{position: :absolute} = box | rest], result, layer) do
+    set_layer(rest, [%{box | layer: layer + 1} | result], layer + 2)
+  end
+
+  defp set_layer([box | rest], result, layer) when is_binary(box) do
+    set_layer(rest, [box | result], layer || 0)
+  end
+
+  defp set_layer([box | rest], result, nil) do
+    set_layer(rest, [%{box | layer: 0} | result], 0)
+  end
+
+  defp set_layer([box | rest], result, layer) do
+    set_layer(rest, [%{box | layer: layer} | result], layer)
+  end
+
+  def join_horizontal(items, opts \\ [])
+
+  def join_horizontal([], _opts) do
+    {"", 0}
+  end
+
+  def join_horizontal(items, opts) do
     items = Enum.map(items, fn x -> {String.graphemes(x) |> Enum.count(&(&1 == "\n")), x} end)
 
     {max_height, _} = Enum.max(items)
