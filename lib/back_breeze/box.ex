@@ -1,4 +1,6 @@
 defmodule BackBreeze.Box do
+  alias BackBreeze.Ucwidth
+
   defstruct content: "",
             children: [],
             style: %BackBreeze.Style{},

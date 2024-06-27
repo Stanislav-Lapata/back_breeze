@@ -1,4 +1,6 @@
 defmodule BackBreeze.Utils do
+  alias BackBreeze.Ucwidth
+
   def string_length(str) do
     str
     |> String.graphemes()
