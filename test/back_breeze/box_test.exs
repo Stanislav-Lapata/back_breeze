@@ -57,6 +57,20 @@ defmodule BackBreeze.BoxTest do
                \e[1;38;5;3mHello\e[0m└─────┘└─────┘\e[3mWorld\e[0m\
                """
     end
+
+    test "renders a tree with empty absolute nesting" do
+      child = BackBreeze.Box.new(content: "Hello", style: %{bold: true, foreground_color: 3})
+      nested = BackBreeze.Box.new(children: [child], position: :absolute, top: 0, left: 1)
+      box = BackBreeze.Box.new(style: %{border: :line}, children: [nested])
+      rendered = BackBreeze.Box.render(box)
+      assert rendered.state == :rendered
+      assert rendered.content ==
+               """
+               ┌\e[1;38;5;3mHello\e[0m┐
+               │     │
+               └─────┘\
+               """
+    end
   end
 
   describe "join_horizontal/2" do

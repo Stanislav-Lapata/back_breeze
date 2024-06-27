@@ -53,10 +53,16 @@ defmodule BackBreeze.Box do
 
     reset = Termite.Style.reset_code()
 
+    {start_x, start_y} =
+      case box do
+        %{position: :absolute, left: left, top: top} -> {left, top}
+        _ -> {0, 0}
+      end
+
     content =
-      Enum.map(0..max_height, fn y ->
+      Enum.map(start_y..max_height, fn y ->
         {content, buffer, style, _} =
-          Enum.reduce(0..max_width, {"", "", "", false}, fn x, {acc, buffer, last_style, skip} ->
+          Enum.reduce(start_x..max_width, {"", "", "", false}, fn x, {acc, buffer, last_style, skip} ->
             child_point = Map.get(child_layer_map, {y, x})
 
             point =
@@ -95,7 +101,6 @@ defmodule BackBreeze.Box do
 
   defp render_self(box) do
     content = BackBreeze.Style.render(box.style, box.content)
-
     items =
       String.split(content, "\n")
       |> Enum.map(&{BackBreeze.Utils.string_length(&1), &1})
