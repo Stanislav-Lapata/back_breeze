@@ -36,5 +36,19 @@ defmodule BackBreeze.StyleTest do
       assert output ==
                "┌───────────┐\n│Hello World│\n│           │\n│           │\n└───────────┘"
     end
+
+    test "renders screen width content" do
+      style =
+        BackBreeze.Style.height(:screen)
+        |> BackBreeze.Style.width(:screen)
+        |> BackBreeze.Style.border()
+
+      {:ok, width} = :io.columns()
+      {:ok, height} = :io.rows()
+      output = BackBreeze.Style.render(style, "Hello World") |> String.split("\n")
+
+      assert length(output) == height
+      assert String.length(hd(output)) == width
+    end
   end
 end

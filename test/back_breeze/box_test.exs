@@ -64,6 +64,7 @@ defmodule BackBreeze.BoxTest do
       box = BackBreeze.Box.new(style: %{border: :line}, children: [nested])
       rendered = BackBreeze.Box.render(box)
       assert rendered.state == :rendered
+
       assert rendered.content ==
                """
                ┌\e[1;38;5;3mHello\e[0m┐

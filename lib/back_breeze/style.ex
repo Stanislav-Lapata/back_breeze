@@ -57,6 +57,16 @@ defmodule BackBreeze.Style do
     %{style | foreground_color: color}
   end
 
+  defp screen_width() do
+    {:ok, cols} = :io.columns()
+    cols
+  end
+
+  defp screen_height() do
+    {:ok, height} = :io.rows()
+    height
+  end
+
   def render(style, str) do
     style = Map.from_struct(style)
 
@@ -69,9 +79,16 @@ defmodule BackBreeze.Style do
 
     {width, str} =
       cond do
+        width == :screen -> {screen_width() - 2, str}
         overflow == :auto && string_length > width -> {string_length, str}
         overflow == :hidden && string_length > width -> {width, String.slice(str, 0, width)}
         true -> {width, str}
+      end
+
+    height =
+      cond do
+        height == :screen -> screen_height() - 2
+        true -> height
       end
 
     termite_style =

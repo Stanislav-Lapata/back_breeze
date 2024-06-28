@@ -61,10 +61,13 @@ defmodule BackBreeze.Box do
         _ -> {0, 0}
       end
 
+    y_range = start_y..max_height
+    x_range = start_x..max_width
+
     content =
-      Enum.map(start_y..max_height, fn y ->
+      Enum.map(y_range, fn y ->
         {content, buffer, style, _} =
-          Enum.reduce(start_x..max_width, {"", "", "", false}, fn x, {acc, buffer, last_style, skip} ->
+          Enum.reduce(x_range, {"", "", "", false}, fn x, {acc, buffer, last_style, skip} ->
             child_point = Map.get(child_layer_map, {y, x})
 
             point =
@@ -103,6 +106,7 @@ defmodule BackBreeze.Box do
 
   defp render_self(box) do
     content = BackBreeze.Style.render(box.style, box.content)
+
     items =
       String.split(content, "\n")
       |> Enum.map(&{BackBreeze.Utils.string_length(&1), &1})
