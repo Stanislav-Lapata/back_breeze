@@ -47,7 +47,7 @@ children =
     tabs ++ [BackBreeze.Box.new(content: "Padding\nThis\nIs\nToo Much\nTabs")]
 
 %{content: content, width: row_length} =
-  BackBreeze.Box.new(children: children)
+  BackBreeze.Box.new(children: children, display: :inline)
   |> BackBreeze.Box.render()
 
 {:ok, width} = :io.columns()

@@ -45,7 +45,7 @@ defmodule BackBreeze.BoxTest do
       nested = BackBreeze.Box.new(children: [child], style: %{border: :line})
 
       world = BackBreeze.Box.new(content: "World", style: %{italic: true})
-      box = BackBreeze.Box.new(children: [child, nested, nested, world])
+      box = BackBreeze.Box.new(children: [child, nested, nested, world], display: :inline)
       rendered = BackBreeze.Box.render(box)
 
       assert rendered.state == :rendered
@@ -74,10 +74,28 @@ defmodule BackBreeze.BoxTest do
     end
   end
 
+  describe "join_vertical/2" do
+    test "joins items vertically" do
+      items = ["One line", "Two\nLines", "Three\n+\n+\nLines"]
+      {content, 8, 3} = BackBreeze.Box.join_vertical(items)
+
+      assert content ==
+               """
+               One line
+               Two
+               Lines
+               Three
+               +
+               +
+               Lines\
+               """
+    end
+  end
+
   describe "join_horizontal/2" do
     test "joins items with padding" do
       items = ["One line", "Two\nLines", "Three\n+\n+\nLines"]
-      {content, 18} = BackBreeze.Box.join_horizontal(items)
+      {content, 18, 3} = BackBreeze.Box.join_horizontal(items)
 
       assert content ==
                """
@@ -90,7 +108,7 @@ defmodule BackBreeze.BoxTest do
 
     test "aligns lines on the right" do
       items = ["One line", "Two\nLines", "Three\n+\n+\nLines"]
-      {content, 18} = BackBreeze.Box.join_horizontal(items, align: :right)
+      {content, 18, 3} = BackBreeze.Box.join_horizontal(items, align: :right)
 
       assert content ==
                """
@@ -103,7 +121,7 @@ defmodule BackBreeze.BoxTest do
 
     test "aligns lines in the center" do
       items = ["One line", "Two\nLines", "Three\n+\n+\nLines"]
-      {content, 18} = BackBreeze.Box.join_horizontal(items, align: :center)
+      {content, 18, 3} = BackBreeze.Box.join_horizontal(items, align: :center)
 
       assert content ==
                """

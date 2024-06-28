@@ -5,8 +5,10 @@ defmodule BackBreeze.Box do
             children: [],
             style: %BackBreeze.Style{},
             width: nil,
+            height: nil,
             state: :ready,
             position: :relative,
+            display: :block,
             left: nil,
             top: nil,
             layer: 0,
@@ -128,12 +130,26 @@ defmodule BackBreeze.Box do
         _ -> {0, %BackBreeze.Style{}}
       end
 
-    {content, width} =
-      Enum.map(relative, & &1.content)
-      |> join_horizontal()
+    items = Enum.map(relative, & &1.content)
+
+    {content, width, height} =
+      case box.display do
+        :block -> join_vertical(items)
+        :inline -> join_horizontal(items)
+      end
 
     absolutes = Enum.filter(children, &(&1.position == :absolute))
-    relative = %{box | style: style, content: content, children: [], width: width, layer: layer}
+
+    relative = %{
+      box
+      | style: style,
+        content: content,
+        children: [],
+        height: height,
+        width: width,
+        layer: layer
+    }
+
     rendered_boxes = [relative | absolutes] |> Enum.sort_by(& &1.layer)
 
     border = box.style.border
@@ -203,10 +219,35 @@ defmodule BackBreeze.Box do
     set_layer(rest, [%{box | layer: layer} | result], layer)
   end
 
+  def join_vertical(items, opts \\ [])
+
+  def join_vertical([], _opts) do
+    {"", 0, 0}
+  end
+
+  def join_vertical(items, _opts) do
+    items_with_width =
+      Enum.map(items, fn x ->
+        max_width =
+          String.split(x, "\n") |> Enum.map(&BackBreeze.Utils.string_length(&1)) |> Enum.max()
+
+        {max_width, x}
+      end)
+
+    {max_width, _} = Enum.max(items_with_width)
+
+    content =
+      items
+      |> Enum.join("\n")
+      |> String.trim_trailing("\n")
+
+    {content, max_width, length(items)}
+  end
+
   def join_horizontal(items, opts \\ [])
 
   def join_horizontal([], _opts) do
-    {"", 0}
+    {"", 0, 0}
   end
 
   def join_horizontal(items, opts) do
@@ -232,7 +273,7 @@ defmodule BackBreeze.Box do
       |> Enum.join("\n")
       |> String.trim_trailing("\n")
 
-    {content, width}
+    {content, width, max_height}
   end
 
   defp normalize_width(items, opts) do
