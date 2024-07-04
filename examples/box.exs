@@ -23,7 +23,7 @@ tab_border =
   })
 
 tab = fn
-  x, false -> BackBreeze.Box.new(style: %{border: tab_border}, content: x)
+  x, false -> BackBreeze.Box.new(style: %{border: tab_border, border_color: 3}, content: x)
   x, true -> BackBreeze.Box.new(style: %{border: active_tab_border}, content: x)
 end
 

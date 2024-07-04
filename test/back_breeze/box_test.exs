@@ -25,6 +25,22 @@ defmodule BackBreeze.BoxTest do
                """
     end
 
+    test "renders with a coloured border" do
+      box =
+        BackBreeze.Box.new(content: "Hello", style: %{border: :line, border_color: 3, bold: true})
+
+      rendered = BackBreeze.Box.render(box)
+
+      assert rendered.state == :rendered
+
+      assert rendered.content ==
+               """
+               \e[33m┌─────┐\e[0m
+               \e[33m│\e[0m\e[1mHello\e[0m\e[33m│\e[0m
+               \e[33m└─────┘\e[0m\
+               """
+    end
+
     test "renders unicode correctly" do
       child = BackBreeze.Box.new(content: "🍏", style: %{forground_color: 2})
       box = BackBreeze.Box.new(children: [child], style: %{border: :line})

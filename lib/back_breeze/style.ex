@@ -9,6 +9,7 @@ defmodule BackBreeze.Style do
             width: 0,
             height: 0,
             overflow: :auto,
+            border_color: nil,
             foreground_color: nil,
             background_color: nil
 
@@ -101,6 +102,8 @@ defmodule BackBreeze.Style do
         {:background_color, col}, t_style -> Termite.Style.background(t_style, col)
         _, t_style -> t_style
       end)
+
+    border = %{border | color: style.border_color}
 
     content =
       BackBreeze.Border.render_left(border) <>

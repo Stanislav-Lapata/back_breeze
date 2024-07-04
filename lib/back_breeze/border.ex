@@ -9,6 +9,7 @@ defmodule BackBreeze.Border do
             top_right: nil,
             bottom_left: nil,
             bottom_right: nil,
+            color: nil,
             style: :none
 
   def none() do
@@ -96,8 +97,11 @@ defmodule BackBreeze.Border do
 
   def render_top(border, width) do
     if border.top do
-      (border.top_left || "") <>
-        String.duplicate(border.top, width) <> (border.top_right || "") <> "\n"
+      str =
+        (border.top_left || "") <>
+          String.duplicate(border.top, width) <> (border.top_right || "")
+
+      render_with_color(str, border) <> "\n"
     else
       ""
     end
@@ -105,18 +109,27 @@ defmodule BackBreeze.Border do
 
   def render_bottom(border, width) do
     if border.bottom do
-      (border.bottom_left || "") <>
-        String.duplicate(border.bottom, width) <> (border.bottom_right || "")
+      str =
+        (border.bottom_left || "") <>
+          String.duplicate(border.bottom, width) <> (border.bottom_right || "")
+
+      render_with_color(str, border)
     else
       ""
     end
   end
 
   def render_left(border) do
-    border.left || ""
+    render_with_color(border.left || "", border)
   end
 
   def render_right(border) do
-    border.right || ""
+    render_with_color(border.right || "", border)
   end
+
+  defp render_with_color("", _), do: ""
+  defp render_with_color(str, %{color: nil}), do: str
+
+  defp render_with_color(str, %{color: color}),
+    do: Termite.Style.foreground(color) |> Termite.Style.render_to_string(str)
 end
