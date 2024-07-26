@@ -41,16 +41,19 @@ defmodule BackBreeze.Box do
 
   def render(box, opts) do
     {child_layer_map, child_width, child_height} = render_children(box, opts)
+    style_width = if box.style.width == :auto, do: 0, else: box.style.width
 
     width =
       if box.style.overflow == :hidden,
         do: box.style.width,
-        else: max(box.style.width, child_width)
+        else: max(style_width, child_width)
+
+    style_height = if box.style.height == :auto, do: 0, else: box.style.height
 
     height =
       if box.style.overflow == :hidden,
         do: box.style.height,
-        else: max(box.style.height, child_height)
+        else: max(style_height, child_height)
 
     style = %{box.style | width: width, height: height}
 

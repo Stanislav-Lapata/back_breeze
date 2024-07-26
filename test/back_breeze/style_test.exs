@@ -51,4 +51,71 @@ defmodule BackBreeze.StyleTest do
       assert String.length(hd(output)) == width
     end
   end
+
+  describe "text overflow" do
+    test "overflows with auto height" do
+      content = String.duplicate("hello world ", 10)
+
+      style =
+        BackBreeze.Style.border()
+        |> BackBreeze.Style.width(30)
+
+      output = BackBreeze.Style.render(style, content)
+
+      assert output ==
+               """
+               ┌──────────────────────────────┐
+               │hello world hello world hello │
+               │world hello world hello world │
+               │hello world hello world hello │
+               │world hello world hello world │
+               └──────────────────────────────┘\
+               """
+    end
+
+    test "hides content with fixed height" do
+      content = String.duplicate("hello world ", 10)
+
+      style =
+        BackBreeze.Style.border()
+        |> BackBreeze.Style.width(30)
+        |> BackBreeze.Style.height(2)
+        |> BackBreeze.Style.overflow(:hidden)
+
+      output = BackBreeze.Style.render(style, content)
+
+      assert output ==
+               """
+               ┌──────────────────────────────┐
+               │hello world hello world hello │
+               │world hello world hello world │
+               └──────────────────────────────┘\
+               """
+    end
+
+    test "adds padding with a specified height" do
+      content = String.duplicate("hello world ", 10)
+
+      style =
+        BackBreeze.Style.border()
+        |> BackBreeze.Style.width(30)
+        |> BackBreeze.Style.height(8)
+
+      output = BackBreeze.Style.render(style, content)
+
+      assert output ==
+               """
+               ┌──────────────────────────────┐
+               │hello world hello world hello │
+               │world hello world hello world │
+               │hello world hello world hello │
+               │world hello world hello world │
+               │                              │
+               │                              │
+               │                              │
+               │                              │
+               └──────────────────────────────┘\
+               """
+    end
+  end
 end

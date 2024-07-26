@@ -6,7 +6,7 @@ defmodule BackBreeze.Style do
             padding: 0,
             reverse: false,
             border: BackBreeze.Border.none(),
-            width: 0,
+            width: :auto,
             height: 0,
             overflow: :auto,
             border_color: nil,
@@ -69,40 +69,41 @@ defmodule BackBreeze.Style do
     {width, style} = Map.pop(style, :width, string_length)
     {height, style} = Map.pop(style, :height, 0)
 
+    auto_width = width == :auto
     width = if width == :auto, do: string_length, else: width
+    width = if width == :screen, do: screen_width - 2, else: width
+    height = if height == :screen, do: screen_height - 2, else: height
+    str = if string_length > width, do: BackBreeze.String.reflow(str, width), else: str
 
-    {width, str} =
-      cond do
-        width == :screen -> {screen_width - 2, str}
-        overflow == :auto && string_length > width -> {string_length, str}
-        overflow == :hidden && string_length > width -> {width, String.slice(str, 0, width)}
-        true -> {width, str}
-      end
-
-    height =
-      cond do
-        height == :screen -> screen_height - 2
-        true -> height
-      end
-
-    termite_style =
-      Enum.reduce(style, Termite.Style.ansi256(), fn
-        {_, nil}, t_style -> t_style
-        {:bold, true}, t_style -> Termite.Style.bold(t_style)
-        {:italic, true}, t_style -> Termite.Style.italic(t_style)
-        {:reverse, true}, t_style -> Termite.Style.reverse(t_style)
-        {:foreground_color, col}, t_style -> Termite.Style.foreground(t_style, col)
-        {:background_color, col}, t_style -> Termite.Style.background(t_style, col)
-        _, t_style -> t_style
-      end)
+    termite_style = to_termite(style)
 
     border = %{border | color: style.border_color}
+    lines = String.split(str, "\n")
+
+    width =
+      if auto_width && length(lines) > 1,
+        do: BackBreeze.Utils.string_length(hd(lines)),
+        else: width
+
+    start_pos = 0
+    end_pos = if overflow == :hidden, do: height - 1, else: -1
+
+    lines = Enum.slice(lines, start_pos..end_pos//1)
 
     content =
-      BackBreeze.Border.render_left(border) <>
-        Termite.Style.render_to_string(termite_style, str) <>
-        String.duplicate(" ", width - string_length) <>
-        BackBreeze.Border.render_right(border)
+      Enum.reduce(lines, "", fn line, acc ->
+        string_length = BackBreeze.Utils.string_length(line)
+        string_padding = if width > string_length, do: width - string_length, else: 0
+
+        acc <>
+          BackBreeze.Border.render_left(border) <>
+          Termite.Style.render_to_string(termite_style, line) <>
+          String.duplicate(" ", string_padding) <>
+          BackBreeze.Border.render_right(border) <> "\n"
+      end)
+
+    line_length = length(lines)
+    height = if line_length > height, do: 0, else: height + 1 - line_length
 
     padding =
       if height > 1 do
@@ -117,8 +118,20 @@ defmodule BackBreeze.Style do
       end
 
     BackBreeze.Border.render_top(border, width) <>
-      content <>
+      String.trim_trailing(content, "\n") <>
       if(padding != "" || border.bottom, do: "\n", else: "") <>
       padding <> BackBreeze.Border.render_bottom(border, width)
+  end
+
+  defp to_termite(style) do
+    Enum.reduce(style, Termite.Style.ansi256(), fn
+      {_, nil}, t_style -> t_style
+      {:bold, true}, t_style -> Termite.Style.bold(t_style)
+      {:italic, true}, t_style -> Termite.Style.italic(t_style)
+      {:reverse, true}, t_style -> Termite.Style.reverse(t_style)
+      {:foreground_color, col}, t_style -> Termite.Style.foreground(t_style, col)
+      {:background_color, col}, t_style -> Termite.Style.background(t_style, col)
+      _, t_style -> t_style
+    end)
   end
 end
