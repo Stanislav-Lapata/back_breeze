@@ -85,8 +85,8 @@ defmodule BackBreeze.Style do
         do: BackBreeze.Utils.string_length(hd(lines)),
         else: width
 
-    start_pos = 0
-    end_pos = if overflow == :hidden, do: height - 1, else: -1
+    start_pos = Keyword.get(opts, :offset_top, 0)
+    end_pos = if overflow == :hidden, do: height + start_pos - 1, else: -1
 
     lines = Enum.slice(lines, start_pos..end_pos//1)
 

@@ -32,3 +32,14 @@ parent = BackBreeze.Box.new(style: %{border: :line}, children: [child]) |> BackB
 box = BackBreeze.Box.new(style: %{border: :line}, children: [parent]) |> BackBreeze.Box.render()
 
 IO.puts(box.content)
+
+child =
+  BackBreeze.Box.new(%{
+    style: %{border: :line, width: 30, height: 5, overflow: :hidden},
+    scroll: {2, 0},
+    content: "2 box OVERFLOW HIDDEN #{content}"
+  })
+
+box = BackBreeze.Box.new(style: %{border: :line}, children: [child]) |> BackBreeze.Box.render()
+
+IO.puts(box.content)

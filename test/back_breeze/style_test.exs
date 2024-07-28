@@ -117,5 +117,26 @@ defmodule BackBreeze.StyleTest do
                └──────────────────────────────┘\
                """
     end
+
+    test "allows a top offset for scrolling" do
+      content = for i <- 1..5, into: "", do: "Line #{i} "
+
+      style =
+        BackBreeze.Style.border()
+        |> BackBreeze.Style.width(7)
+        |> BackBreeze.Style.height(3)
+        |> BackBreeze.Style.overflow(:hidden)
+
+      output = BackBreeze.Style.render(style, content, offset_top: 1)
+
+      assert output ==
+               """
+               ┌───────┐
+               │Line 2 │
+               │Line 3 │
+               │Line 4 │
+               └───────┘\
+               """
+    end
   end
 end

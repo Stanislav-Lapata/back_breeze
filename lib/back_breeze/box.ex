@@ -10,6 +10,7 @@ defmodule BackBreeze.Box do
             position: :relative,
             display: :block,
             left: nil,
+            scroll: {0, 0},
             top: nil,
             layer: 0,
             layer_map: %{}
@@ -117,6 +118,8 @@ defmodule BackBreeze.Box do
   end
 
   defp render_self(box, opts) do
+    {offset_top, _} = box.scroll
+    opts = Keyword.put(opts, :offset_top, offset_top)
     content = BackBreeze.Style.render(box.style, box.content, opts)
 
     items =
