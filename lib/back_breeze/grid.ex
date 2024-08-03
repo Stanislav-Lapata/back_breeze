@@ -1,8 +1,22 @@
 defmodule BackBreeze.Grid do
-  defstruct [:columns, :rows]
+  @moduledoc """
+  Struct for creating a grid to be used by a Box.
+
+  BackBreeze.Box.new(
+    style: %{border: :line},
+    display: %BackBreeze.Grid{columns: 1},
+    children: [BackBreeze.Box.new(content: "Hello"), BackBreeze.Box.new(content: "World")]
+  )
+  """
+
+  @doc """
+  Create a grid with the specified number of columns.
+  """
+  defstruct [:columns]
 
   @auto_sizes [:screen, :auto]
 
+  @doc false
   def precompute(items, grid, style, opts) do
     {screen_width, screen_height} = BackBreeze.screen_dimensions(Keyword.get(opts, :terminal))
 
@@ -30,6 +44,7 @@ defmodule BackBreeze.Grid do
     %{width: item_width, height: item_height}
   end
 
+  @doc false
   def render(items, grid, style, opts) do
     {screen_width, screen_height} = BackBreeze.screen_dimensions(Keyword.get(opts, :terminal))
 

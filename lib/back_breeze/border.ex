@@ -1,4 +1,7 @@
 defmodule BackBreeze.Border do
+  @moduledoc """
+  Helper functions for generating borders.
+  """
   alias __MODULE__
 
   defstruct top: nil,
@@ -12,15 +15,24 @@ defmodule BackBreeze.Border do
             color: nil,
             style: :none
 
+  @doc """
+  Return an empty border.
+  """
   def none() do
     %Border{}
   end
 
+  @doc """
+  Return a custom border by providing the individual glyphs.
+  """
   def custom(map) do
     keys = [:top, :bottom, :left, :right, :top_left, :top_right, :bottom_left, :bottom_right]
     Map.merge(%Border{style: :custom}, Map.take(map, keys))
   end
 
+  @doc """
+  Return a line border.
+  """
   def line() do
     %Border{
       style: :line,
@@ -35,6 +47,9 @@ defmodule BackBreeze.Border do
     }
   end
 
+  @doc """
+  Return an invisible border.
+  """
   def invisible() do
     %Border{
       style: :invisible,
@@ -59,6 +74,9 @@ defmodule BackBreeze.Border do
     border_before = Enum.at(@borders, i - 1)
     border_after = Enum.at(@borders, i + 1) || hd(@borders)
 
+    @doc """
+    Set the #{dir} border glyph.
+    """
     def unquote(dir)(border) do
       border = if border.style == :none, do: %{border | style: :line}, else: border
 
@@ -95,6 +113,14 @@ defmodule BackBreeze.Border do
 
   # TODO: if any borders are set, replace the missing parts with a " " character
 
+  @doc """
+  Render a top border of the specified width.
+
+  ```elixir
+  iex> BackBreeze.Border.line() |> BackBreeze.Border.render_top(10)
+  "┌──────────┐\n"
+  ```
+  """
   def render_top(border, width) do
     if border.top do
       str =
@@ -107,6 +133,14 @@ defmodule BackBreeze.Border do
     end
   end
 
+  @doc """
+  Render a bottom border of the specified width.
+
+  ```elixir
+  iex> BackBreeze.Border.line() |> BackBreeze.Border.render_top(10)
+  "┌──────────┐\n"
+  ```
+  """
   def render_bottom(border, width) do
     if border.bottom do
       str =
@@ -119,10 +153,26 @@ defmodule BackBreeze.Border do
     end
   end
 
+  @doc """
+  Render a left border.
+
+  ```elixir
+  iex> BackBreeze.Border.line() |> BackBreeze.Border.render_left()
+  "│"
+  ```
+  """
   def render_left(border) do
     render_with_color(border.left || "", border)
   end
 
+  @doc """
+  Render a right border.
+
+  ```elixir
+  iex> BackBreeze.Border.line() |> BackBreeze.Border.render_right()
+  "│"
+  ```
+  """
   def render_right(border) do
     render_with_color(border.right || "", border)
   end

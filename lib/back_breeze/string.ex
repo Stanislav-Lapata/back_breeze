@@ -1,4 +1,6 @@
 defmodule BackBreeze.String do
+  @moduledoc false
+
   alias BackBreeze.Ucwidth
   import BackBreeze.Utils, only: [string_length: 1]
 

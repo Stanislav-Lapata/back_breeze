@@ -1,6 +1,18 @@
 defmodule BackBreeze.Utils do
+  @moduledoc """
+  This module contains functions for dealing with strings containing
+  escape codes.
+  """
   alias BackBreeze.Ucwidth
 
+  @doc """
+  Return the string length without escape sequences, factoring in glyph width.
+
+  ```elixir
+  iex> BackBreeze.Utils.string_length("\e1;38;5;3m123🍏")
+  5
+  ```
+  """
   def string_length(str) do
     str
     |> String.graphemes()
@@ -15,6 +27,14 @@ defmodule BackBreeze.Utils do
     |> elem(1)
   end
 
+  @doc """
+  Strip escape characters from a string.
+
+  ```elixir
+  iex> BackBreeze.Utils.strip_escape_chars("\e1;38;5;3m123🍏")
+  "123🍏"
+  ```
+  """
   def strip_escape_chars(str) do
     str
     |> String.graphemes()

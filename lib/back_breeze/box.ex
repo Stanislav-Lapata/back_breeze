@@ -1,4 +1,9 @@
 defmodule BackBreeze.Box do
+  @moduledoc """
+  A Box is the basic styling primitive used in BackBreeze. If a box has children,
+  they will be rendered first and collapsed down, until a single box remains with
+  the rendered contents.
+  """
   alias BackBreeze.Ucwidth
 
   defstruct content: "",
@@ -15,6 +20,17 @@ defmodule BackBreeze.Box do
             layer: 0,
             layer_map: %{}
 
+  @doc """
+  Create a new `BackBreeze.Box` struct.
+
+  ## Options
+
+   * `:style` - a style map, with any valid keys from `BackBreeze.Style`. The `:border`
+     style can be provided as `:line` for convenience.
+
+  All other options are passed to the `BackBreeze.Box` struct.
+
+  """
   def new(opts) do
     map = Map.new(opts)
     style = Map.get(map, :style, %{})
@@ -29,6 +45,14 @@ defmodule BackBreeze.Box do
     struct(BackBreeze.Box, Map.put(map, :style, style))
   end
 
+  @doc """
+  Render a box and a tree of its children.
+
+  ## Options
+
+    * `:offset_top` - number of columns to offset from the top.
+    * `:terminal` - the terminal to use. This is used for the terminal size if provided.
+  """
   def render(box, opts \\ [])
 
   def render(%{state: :rendered} = box, _opts) do
@@ -279,6 +303,7 @@ defmodule BackBreeze.Box do
     set_layer(rest, [%{box | layer: layer} | result], layer)
   end
 
+  @doc false
   def join_vertical(items, opts \\ [])
 
   def join_vertical([], _opts) do
@@ -304,6 +329,7 @@ defmodule BackBreeze.Box do
     {content, max_width, content |> String.split("\n") |> length()}
   end
 
+  @doc false
   def join_horizontal(items, opts \\ [])
 
   def join_horizontal([], _opts) do

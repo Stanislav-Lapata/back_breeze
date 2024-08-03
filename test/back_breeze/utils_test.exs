@@ -1,5 +1,6 @@
 defmodule BackBreeze.UtilsTest do
   use ExUnit.Case, async: true
+  doctest BackBreeze.Utils
 
   test "string_length/1 ignores escape sequences" do
     style =

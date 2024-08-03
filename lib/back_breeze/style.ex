@@ -1,4 +1,7 @@
 defmodule BackBreeze.Style do
+  @moduledoc """
+  Helper module for styling boxes.
+  """
   alias __MODULE__
 
   defstruct bold: false,

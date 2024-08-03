@@ -1,5 +1,6 @@
 defmodule BackBreeze.BorderTest do
   use ExUnit.Case, async: true
+  doctest BackBreeze.Border
 
   describe "basic borders" do
     test "line border" do
