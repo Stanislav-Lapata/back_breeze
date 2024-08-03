@@ -1,17 +1,22 @@
 defmodule BackBreeze.MixProject do
   use Mix.Project
 
+  @version "0.2.0"
+
   def project do
     [
       app: :back_breeze,
       description: "A terminal layout rendering library.",
       package: package(),
-      version: "0.2.0",
+      version: @version,
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "BackBreeze",
-      source_url: "https://github.com/Gazler/back_breeze"
+      source_url: "https://github.com/Gazler/back_breeze",
+      docs: [
+        source_ref: "v#{@version}"
+      ]
     ]
   end
 
