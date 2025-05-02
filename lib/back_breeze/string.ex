@@ -16,6 +16,9 @@ defmodule BackBreeze.String do
         next_width = cur_width + char_width
 
         cond do
+          char == "\n" && cur_line == "" ->
+            {acc <> cur_word <> "\n", 0, "", ""}
+
           char == "\n" ->
             {acc <> cur_line <> "\n", 0, "", ""}
 

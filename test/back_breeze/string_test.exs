@@ -14,6 +14,18 @@ defmodule BackBreeze.StringTest do
              """
     end
 
+    test "reflowing with line breaks" do
+      string = String.duplicate("helloworld\n", 5)
+
+      assert BackBreeze.String.reflow(string, 11) == """
+             helloworld
+             helloworld
+             helloworld
+             helloworld
+             helloworld
+             """
+    end
+
     test "variable word length" do
       string = String.duplicate("this is a variable length line ", 3)
 
