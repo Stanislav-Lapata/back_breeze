@@ -1,7 +1,7 @@
 defmodule BackBreeze.MixProject do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.2.1"
 
   def project do
     [
@@ -36,7 +36,7 @@ defmodule BackBreeze.MixProject do
 
   defp deps do
     [
-      {:termite, "~> 0.2.0"},
+      {:termite, "~> 0.3.0"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
   end
