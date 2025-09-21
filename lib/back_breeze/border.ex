@@ -137,8 +137,8 @@ defmodule BackBreeze.Border do
   Render a bottom border of the specified width.
 
   ```elixir
-  iex> BackBreeze.Border.line() |> BackBreeze.Border.render_top(10)
-  "┌──────────┐\n"
+  iex> BackBreeze.Border.line() |> BackBreeze.Border.render_bottom(10)
+  "└──────────┘\n"
   ```
   """
   def render_bottom(border, width) do
